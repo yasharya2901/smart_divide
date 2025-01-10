@@ -1,0 +1,9 @@
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Force shell scripts to use LF
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Force powershell scripts to use CRLF
+*.ps1 text eol=crlf
