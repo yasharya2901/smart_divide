@@ -1,6 +1,11 @@
 package models
 
 import (
+	"log"
+	"os"
+	"strconv"
+
+	"github.com/yasharya2901/smart_divide/utils"
 	"gorm.io/gorm"
 )
 
@@ -29,6 +34,28 @@ type Person struct {
 	Password   string          `gorm:"type:varchar(255);not null"` // Hashed password
 	Events     []Event         `gorm:"many2many:event_people"`     // Many-to-many relationship with Event
 	Expenses   []ExpensePerson `gorm:"foreignKey:PersonID"`        // Splits for expenses
+}
+
+// Send an email to the person after creation of the person
+func (p *Person) AfterCreate(tx *gorm.DB) (err error) {
+	// Generate Random Password
+	passwordLengthStr := os.Getenv("PASSWORD_LENGTH")
+	passwordLength, err := strconv.Atoi(passwordLengthStr)
+	if err != nil {
+		passwordLength = utils.DEFAULT_PASSWORD_LENGTH
+	}
+
+	password, err := utils.GenerateRandomPassword(passwordLength)
+	if err != nil {
+		log.Fatalf("error generating random password for email %s: %v", p.Email, err)
+	}
+
+	// Update the password
+	p.Password = password
+
+	// Send an email to the person
+	log.Printf("Password of %v is %v", p.Email, password) // Temporary log message
+	return nil
 }
 
 type ExpensePerson struct {

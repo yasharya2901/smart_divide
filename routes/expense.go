@@ -1,21 +1,33 @@
 package routes
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/yasharya2901/smart_divide/handlers"
+	"gorm.io/gorm"
 )
 
-func ExpenseRoutes(rg *gin.RouterGroup) {
+func ExpenseRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	expenses := rg.Group("/expenses")
 
-	expenses.GET("/", func(c *gin.Context) {
-		// For now, mock a response
-		c.JSON(http.StatusOK, gin.H{"message": "Fetching all expenses"})
-	})
+	expenseHandler := handlers.NewExpenseHandler(db)
 
-	expenses.POST("/", func(c *gin.Context) {
-		// Mock response
-		c.JSON(http.StatusCreated, gin.H{"message": "Expense added successfully"})
-	})
+	// Base expense routes
+	expenses.GET("/", expenseHandler.GetExpenses())
+	expenses.POST("/", expenseHandler.CreateExpense())
+
+	// Single expense routes
+	expenses.GET("/:id", expenseHandler.GetExpense())
+	expenses.PUT("/:id", expenseHandler.UpdateExpense())
+	expenses.DELETE("/:id", expenseHandler.DeleteExpense())
+
+	// Expense participants management routes
+	participants := expenses.Group("/:id/participants")
+	participants.GET("/", expenseHandler.GetParticipants())
+	participants.POST("/", expenseHandler.AddParticipant())
+	participants.PUT("/:personId", expenseHandler.UpdateParticipant())
+	participants.DELETE("/:personId", expenseHandler.RemoveParticipant())
+
+	// Check for payment consistency
+	expenses.GET("/:id/check", expenseHandler.CheckExpenseConsistency())
+
 }
