@@ -16,6 +16,7 @@ func NewMySQL(user, password, host, port, dbName string) (*MySQL, error) {
 	dsn := fmt.Sprintf("%s:%s@(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", user, password, host, port, dbName)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
+		log.Println("Please check the environment variables")
 		log.Fatal(err)
 	}
 
@@ -40,5 +41,6 @@ func (m *MySQL) Close() error {
 		return fmt.Errorf("failed to close database connection: %w", err)
 	}
 
+	log.Println("database connection closed")
 	return nil
 }
