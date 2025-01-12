@@ -121,3 +121,38 @@ func (ps *PeopleService) Authenticate(email, password string) (interface{}, erro
 		Contact: person.Contact,
 	}, nil
 }
+
+func (ps *PeopleService) ChangePassword(email, oldPassword, newPassword string) error {
+	// Change password of a person
+	var person models.Person
+
+	hashedOldPassword, err := utils.HashPassword(oldPassword)
+	if err != nil {
+		return err
+	}
+
+	hashedNewPassword, err := utils.HashPassword(newPassword)
+	if err != nil {
+		return err
+	}
+
+	if err := ps.db.Where("email = ?", email).First(&person).Error; err != nil {
+		return err
+	}
+
+	passwordMatched, err := utils.ComparePasswords(hashedOldPassword, person.Password)
+	if err != nil {
+		return err
+	}
+
+	if !passwordMatched {
+		return errors.New("incorrect password")
+	}
+
+	person.Password = hashedNewPassword
+	if err := ps.db.Save(&person).Error; err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -54,7 +54,7 @@ func main() {
 
 	api := router.Group("/api/v0")
 
-	routes.PersonRoutes(api)
+	routes.PersonRoutes(api, db.GetDB())
 	routes.EventRoutes(api, db.GetDB())
 	routes.ExpenseRoutes(api, db.GetDB())
 
