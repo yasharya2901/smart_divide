@@ -58,6 +58,9 @@ func main() {
 	routes.EventRoutes(api, db.GetDB())
 	routes.ExpenseRoutes(api, db.GetDB())
 
+	auth := router.Group("/auth")
+	routes.AuthRoutes(auth, db.GetDB())
+
 	// Create http.Server
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%s", os.Getenv("SERVER_PORT")),

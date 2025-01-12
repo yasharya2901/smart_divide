@@ -1,24 +1,19 @@
 package routes
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/yasharya2901/smart_divide/handlers"
+	"gorm.io/gorm"
 )
 
-func PersonRoutes(rg *gin.RouterGroup) {
+func PersonRoutes(rg *gin.RouterGroup, db *gorm.DB) {
 	// Group for people-related routes
 	people := rg.Group("/people")
+	peopleHandler := handlers.NewPeopleHandler(db)
 
-	// Define a simple route to get all people
-	people.GET("/", func(c *gin.Context) {
-		// Mock response for now
-		c.JSON(http.StatusOK, gin.H{"message": "Fetching all people"})
-	})
+	people.GET("/:id", peopleHandler.GetPerson())
+	people.PUT("/:id", peopleHandler.UpdatePerson())
 
-	// Example: Add a new person
-	people.POST("/", func(c *gin.Context) {
-		// Mock response
-		c.JSON(http.StatusCreated, gin.H{"message": "Person added successfully"})
-	})
+	people.POST("/contacts", peopleHandler.GetPeopleByContacts())
+	people.POST("/emails", peopleHandler.GetPeopleByEmails())
 }

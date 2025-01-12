@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"time"
 
 	"github.com/yasharya2901/smart_divide/models"
 	"github.com/yasharya2901/smart_divide/utils"
@@ -47,7 +48,7 @@ func (ps *PeopleService) GetPersonByID(id uint) (*models.Person, error) {
 	return &person, nil
 }
 
-func (ps *PeopleService) UpdatePerson(id uint, name, contact, email string) (*models.Person, error) {
+func (ps *PeopleService) UpdatePerson(id uint, name, contact, email, refreshToken string, expiryTime time.Time) (*models.Person, error) {
 	// Update a person
 	var person models.Person
 
@@ -63,6 +64,11 @@ func (ps *PeopleService) UpdatePerson(id uint, name, contact, email string) (*mo
 	}
 	if email != "" {
 		person.Email = email
+	}
+
+	if refreshToken != "" {
+		person.RefreshToken = refreshToken
+		person.RefreshTokenExpiryDate = &expiryTime
 	}
 
 	if err := ps.db.Save(&person).Error; err != nil {
@@ -120,39 +126,4 @@ func (ps *PeopleService) Authenticate(email, password string) (interface{}, erro
 		Email:   person.Email,
 		Contact: person.Contact,
 	}, nil
-}
-
-func (ps *PeopleService) ChangePassword(email, oldPassword, newPassword string) error {
-	// Change password of a person
-	var person models.Person
-
-	hashedOldPassword, err := utils.HashPassword(oldPassword)
-	if err != nil {
-		return err
-	}
-
-	hashedNewPassword, err := utils.HashPassword(newPassword)
-	if err != nil {
-		return err
-	}
-
-	if err := ps.db.Where("email = ?", email).First(&person).Error; err != nil {
-		return err
-	}
-
-	passwordMatched, err := utils.ComparePasswords(hashedOldPassword, person.Password)
-	if err != nil {
-		return err
-	}
-
-	if !passwordMatched {
-		return errors.New("incorrect password")
-	}
-
-	person.Password = hashedNewPassword
-	if err := ps.db.Save(&person).Error; err != nil {
-		return err
-	}
-
-	return nil
 }
